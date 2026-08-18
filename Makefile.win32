@@ -1,0 +1,83 @@
+# Windows binaries.
+#   make -f Makefile.win32                 MinGW-w64 (default)
+#   make -f Makefile.win32 TOOLSET=msvc    Visual Studio cl (vcvars64)
+
+TOOLSET ?= mingw
+
+DEMOS = xcb-tile.exe xcb-tile-anim.exe xcb-tile-sprites.exe xcb-tile-mask.exe
+
+.DEFAULT_GOAL := all
+.PHONY: all clean check-mingw check-msvc
+
+ifeq ($(TOOLSET),msvc)
+
+ifeq ($(OS),Windows_NT)
+CL = msvc-cl.cmd
+else
+CL = sh msvc-cl.sh
+endif
+
+WINLIBS = user32.lib gdi32.lib winmm.lib
+CLFLAGS = /nologo /O2 /W3 /D_CRT_SECURE_NO_WARNINGS
+
+all: check-msvc $(DEMOS)
+	@echo "win32 TOOLSET=msvc  (cl)"
+
+check-msvc:
+	@$(CL) /nologo /? >/dev/null || { \
+	  echo "Need Visual Studio C++ x64 toolset (cl + vcvars64)."; \
+	  echo "  make -f Makefile.win32 TOOLSET=msvc"; \
+	  echo "  Or set VCVARS to your vcvars64.bat"; \
+	  exit 1; }
+
+xcb-tile.exe: demo.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(CL) $(CLFLAGS) /Fe:$@ demo.c hw.c plat_win32.c map.c $(WINLIBS)
+
+xcb-tile-anim.exe: demo_anim.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(CL) $(CLFLAGS) /Fe:$@ demo_anim.c hw.c plat_win32.c map.c $(WINLIBS)
+
+xcb-tile-sprites.exe: demo_sprites.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(CL) $(CLFLAGS) /Fe:$@ demo_sprites.c hw.c plat_win32.c map.c $(WINLIBS)
+
+xcb-tile-mask.exe: demo_mask.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(CL) $(CLFLAGS) /Fe:$@ demo_mask.c hw.c plat_win32.c map.c $(WINLIBS)
+
+else
+
+ifeq ($(OS),Windows_NT)
+MINGW_CC ?= gcc
+else
+MINGW_CC ?= x86_64-w64-mingw32-gcc
+endif
+
+all: check-mingw $(DEMOS)
+	@echo "win32 TOOLSET=mingw  ($(MINGW_CC))"
+
+check-mingw:
+	@command -v $(MINGW_CC) >/dev/null || { \
+	  echo "Need MinGW-w64. On Debian/Ubuntu/WSL:"; \
+	  echo "  sudo apt install gcc-mingw-w64-x86-64"; \
+	  echo "Then re-run: make -f Makefile.win32"; \
+	  echo "Or: make -f Makefile.win32 TOOLSET=msvc"; \
+	  exit 1; }
+
+xcb-tile.exe: demo.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo.c hw.c plat_win32.c map.c \
+		-lgdi32 -luser32 -lwinmm
+
+xcb-tile-anim.exe: demo_anim.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo_anim.c hw.c plat_win32.c map.c \
+		-lgdi32 -luser32 -lwinmm
+
+xcb-tile-sprites.exe: demo_sprites.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo_sprites.c hw.c plat_win32.c map.c \
+		-lgdi32 -luser32 -lwinmm
+
+xcb-tile-mask.exe: demo_mask.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo_mask.c hw.c plat_win32.c map.c \
+		-lgdi32 -luser32 -lwinmm
+
+endif
+
+clean:
+	rm -f $(DEMOS) *.obj
