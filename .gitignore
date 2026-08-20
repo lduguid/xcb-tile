@@ -2,5 +2,8 @@ xcb-tile
 xcb-tile-anim
 xcb-tile-sprites
 xcb-tile-mask
+xcb-tile-sprites-odin
+libtile.a
+*.o
 *.exe
 *.obj
