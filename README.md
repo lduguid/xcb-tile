@@ -2,6 +2,8 @@
 
 You never plot pixels. You are programming a **tile PPU** (VIC-II / NES nametable, 8-pixel fine scroll).
 
+This is not a C64 or NES emulator. Nametable scroll, a 64-color palette, and a handful of sprites are a small subset of that hardware so games share one C API.
+
 Load a 64-color palette, stamp 8×8 tiles into a charset, poke tile ids into a nametable, poke the scroll. Sprites are 32×32, 32 of them, color 0 transparent. Positions are **screen pixels** — subtract the camera yourself, same as a C64.
 
 The nametable is one tile larger than the 320×200 view (41×26). `hw_scroll` moves one pixel at a time. After 8 pixels the nametable `memmove`s one cell and fine wraps. Newly exposed cells become **tile 0**; fill them with `hw_put`. That “paint the new column” step is the constraint that shaped C64/NES scrollers.
