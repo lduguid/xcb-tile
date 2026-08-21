@@ -6,9 +6,9 @@ LIBS = $(shell pkg-config --libs x11 xcb) $(X11XCB)
 
 HARNESS = hw.c plat.c map.c hw.h hw_internal.h map.h
 TILELIB_OBJ = hw.o plat.o map.o
-.PHONY: all clean odin
+.PHONY: all clean odin examples
 
-all: xcb-tile xcb-tile-anim xcb-tile-sprites xcb-tile-mask
+all: xcb-tile xcb-tile-anim xcb-tile-sprites xcb-tile-mask xcb-tile-edit xcb-tile-bank xcb-tile-play examples
 
 xcb-tile: demo.c $(HARNESS)
 	$(CC) $(CFLAGS) -o $@ demo.c hw.c plat.c map.c $(LIBS)
@@ -21,6 +21,21 @@ xcb-tile-sprites: demo_sprites.c $(HARNESS)
 
 xcb-tile-mask: demo_mask.c $(HARNESS)
 	$(CC) $(CFLAGS) -o $@ demo_mask.c hw.c plat.c map.c $(LIBS)
+
+xcb-tile-edit: editor.c bank.c bank.h hw.h
+	$(CC) $(CFLAGS) -o $@ editor.c bank.c $(LIBS)
+
+xcb-tile-bank: demo_bank.c bank.c bank_hw.c $(HARNESS)
+	$(CC) $(CFLAGS) -o $@ demo_bank.c bank.c bank_hw.c hw.c plat.c $(LIBS)
+
+xcb-tile-play: demo_play.c play.c play.h bank.c bank_hw.c $(HARNESS)
+	$(CC) $(CFLAGS) -o $@ demo_play.c play.c bank.c bank_hw.c hw.c plat.c $(LIBS)
+
+mkbanks: examples/mkbanks.c bank.c bank.h hw.h
+	$(CC) $(CFLAGS) -I. -o $@ examples/mkbanks.c bank.c
+
+examples: mkbanks
+	./mkbanks
 
 hw.o: hw.c hw.h hw_internal.h
 	$(CC) $(CFLAGS) -c -o $@ hw.c
@@ -41,4 +56,4 @@ odin: xcb-tile-sprites-odin
 
 clean:
 	rm -f xcb-tile xcb-tile-anim xcb-tile-sprites xcb-tile-mask
-	rm -f xcb-tile-sprites-odin libtile.a $(TILELIB_OBJ)
+	rm -f xcb-tile-edit xcb-tile-bank xcb-tile-play xcb-tile-sprites-odin mkbanks libtile.a $(TILELIB_OBJ)

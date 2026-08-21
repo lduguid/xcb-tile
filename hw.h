@@ -78,6 +78,7 @@ void hw_sprite_draw(int i, int draw);     /* 0 = collide only, 1 = draw (default
 
 int hw_hit(int a, int b);  /* opaque pixel overlap */
 int hw_hit_bg(int i);      /* opaque sprite pixel over a non-zero tile id */
+/* World maps with passable tiles: bank_mask_hit (colour 0 = empty). */
 
 typedef struct {
     int coarse_x; /* tiles shifted this call, -N..+N */
@@ -95,10 +96,16 @@ enum {
     KEY_UP,
     KEY_DOWN,
     KEY_ESC,
-    KEY_Q
+    KEY_Q,
+    KEY_SPACE,
+    KEY_COUNT
 };
 
+#define KEY_JUMP KEY_SPACE
+
 int hw_key_down(int key);
+int hw_key_pressed(int key);  /* 1 only on the frame the key went down */
+int hw_key_released(int key);
 int hw_main(void (*tick)(float dt));
 
 #endif

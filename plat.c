@@ -48,6 +48,8 @@ static int map_key(KeySym ks)
         return KEY_ESC;
     if (ks == XK_q || ks == XK_Q)
         return KEY_Q;
+    if (ks == XK_space)
+        return KEY_SPACE;
     return 0;
 }
 
@@ -262,6 +264,7 @@ int hw_main(void (*tick)(float dt))
         if (dt > 0.05)
             dt = 0.05;
         tick((float)dt);
+        hw_keys_end_frame();
 
         left = TICK_US / 1000000.0 - (now_sec() - t);
         if (left < 0.0)

@@ -12,7 +12,9 @@ static uint8_t spat[HW_SP_PATS][SP_PIX];
 static Pixel *vis;
 static int fine_x, fine_y;
 static int origin_tx, origin_ty;
-static int keys[8];
+static int keys[KEY_COUNT];
+static int keys_hit[KEY_COUNT];
+static int keys_rel[KEY_COUNT];
 
 typedef struct {
     int x, y, pat, on, behind, draw;
@@ -31,8 +33,13 @@ int hw_cam_y(void) { return origin_ty * HW_TILE + fine_y; }
 
 void hw_key_set(int key, int down)
 {
-    if (key <= 0 || key >= 8)
+    if (key <= 0 || key >= KEY_COUNT)
         return;
+    down = down ? 1 : 0;
+    if (down && !keys[key])
+        keys_hit[key] = 1;
+    if (!down && keys[key])
+        keys_rel[key] = 1;
     keys[key] = down;
     if (down) {
         if (key == KEY_LEFT)
@@ -48,9 +55,29 @@ void hw_key_set(int key, int down)
 
 int hw_key_down(int key)
 {
-    if (key <= 0 || key >= 8)
+    if (key <= 0 || key >= KEY_COUNT)
         return 0;
     return keys[key];
+}
+
+int hw_key_pressed(int key)
+{
+    if (key <= 0 || key >= KEY_COUNT)
+        return 0;
+    return keys_hit[key];
+}
+
+int hw_key_released(int key)
+{
+    if (key <= 0 || key >= KEY_COUNT)
+        return 0;
+    return keys_rel[key];
+}
+
+void hw_keys_end_frame(void)
+{
+    memset(keys_hit, 0, sizeof(keys_hit));
+    memset(keys_rel, 0, sizeof(keys_rel));
 }
 
 static void default_palette(void)
@@ -75,6 +102,9 @@ int hw_init(void)
     memset(map, 0, sizeof(map));
     memset(spat, 0, sizeof(spat));
     memset(sp, 0, sizeof(sp));
+    memset(keys, 0, sizeof(keys));
+    memset(keys_hit, 0, sizeof(keys_hit));
+    memset(keys_rel, 0, sizeof(keys_rel));
     default_palette();
     fine_x = fine_y = 0;
     origin_tx = origin_ty = 0;

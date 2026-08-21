@@ -31,6 +31,8 @@ static int map_vk(WPARAM vk)
         return KEY_ESC;
     if (vk == 'Q')
         return KEY_Q;
+    if (vk == VK_SPACE)
+        return KEY_SPACE;
     return 0;
 }
 
@@ -192,6 +194,7 @@ int hw_main(void (*tick)(float dt))
         if (dt > 0.05)
             dt = 0.05;
         tick((float)dt);
+        hw_keys_end_frame();
 
         if (!dwm_flush) {
             left = 1.0 / 60.0 - (now_sec() - t);

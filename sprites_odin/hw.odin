@@ -37,6 +37,8 @@ KEY_UP :: 3
 KEY_DOWN :: 4
 KEY_ESC :: 5
 KEY_Q :: 6
+KEY_SPACE :: 7
+KEY_JUMP :: KEY_SPACE
 
 T_SKY :: 0
 T_CLOUD :: 1
@@ -84,6 +86,8 @@ foreign plat {
     hw_swap :: proc() ---
 
     hw_key_down :: proc(key: c.int) -> c.int ---
+    hw_key_pressed :: proc(key: c.int) -> c.int ---
+    hw_key_released :: proc(key: c.int) -> c.int ---
     hw_main :: proc(tick: proc "c" (dt: f32)) -> c.int ---
 
     map_tileset :: proc() ---

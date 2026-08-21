@@ -8,5 +8,6 @@ void hw_shutdown(void);
 const Pixel *hw_visible(void);
 void hw_compose(void);
 void hw_key_set(int key, int down);
+void hw_keys_end_frame(void);
 
 #endif

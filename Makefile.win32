@@ -4,7 +4,9 @@
 
 TOOLSET ?= mingw
 
-DEMOS = xcb-tile.exe xcb-tile-anim.exe xcb-tile-sprites.exe xcb-tile-mask.exe
+TAG ?=
+NAMES = xcb-tile xcb-tile-anim xcb-tile-sprites xcb-tile-mask xcb-tile-play
+DEMOS = $(addsuffix $(TAG).exe,$(NAMES))
 
 .DEFAULT_GOAL := all
 .PHONY: all clean check-mingw check-msvc
@@ -13,34 +15,40 @@ ifeq ($(TOOLSET),msvc)
 
 ifeq ($(OS),Windows_NT)
 CL = msvc-cl.cmd
+DEVNUL = NUL
 else
 CL = sh msvc-cl.sh
+DEVNUL = /dev/null
 endif
 
 WINLIBS = user32.lib gdi32.lib winmm.lib
-CLFLAGS = /nologo /O2 /W3 /D_CRT_SECURE_NO_WARNINGS
+CLFLAGS = -nologo -O2 -W3 -D_CRT_SECURE_NO_WARNINGS
+MSVC_GUI = -link -SUBSYSTEM:WINDOWS -ENTRY:mainCRTStartup
 
 all: check-msvc $(DEMOS)
 	@echo "win32 TOOLSET=msvc  (cl)"
 
 check-msvc:
-	@$(CL) /nologo /? >/dev/null || { \
+	@$(CL) -nologo -Bv >$(DEVNUL) 2>&1 || { \
 	  echo "Need Visual Studio C++ x64 toolset (cl + vcvars64)."; \
 	  echo "  make -f Makefile.win32 TOOLSET=msvc"; \
 	  echo "  Or set VCVARS to your vcvars64.bat"; \
 	  exit 1; }
 
-xcb-tile.exe: demo.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
-	$(CL) $(CLFLAGS) /Fe:$@ demo.c hw.c plat_win32.c map.c $(WINLIBS)
+xcb-tile$(TAG).exe: demo.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(CL) $(CLFLAGS) -Fe$@ demo.c hw.c plat_win32.c map.c $(MSVC_GUI) $(WINLIBS)
 
-xcb-tile-anim.exe: demo_anim.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
-	$(CL) $(CLFLAGS) /Fe:$@ demo_anim.c hw.c plat_win32.c map.c $(WINLIBS)
+xcb-tile-anim$(TAG).exe: demo_anim.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(CL) $(CLFLAGS) -Fe$@ demo_anim.c hw.c plat_win32.c map.c $(MSVC_GUI) $(WINLIBS)
 
-xcb-tile-sprites.exe: demo_sprites.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
-	$(CL) $(CLFLAGS) /Fe:$@ demo_sprites.c hw.c plat_win32.c map.c $(WINLIBS)
+xcb-tile-sprites$(TAG).exe: demo_sprites.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(CL) $(CLFLAGS) -Fe$@ demo_sprites.c hw.c plat_win32.c map.c $(MSVC_GUI) $(WINLIBS)
 
-xcb-tile-mask.exe: demo_mask.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
-	$(CL) $(CLFLAGS) /Fe:$@ demo_mask.c hw.c plat_win32.c map.c $(WINLIBS)
+xcb-tile-mask$(TAG).exe: demo_mask.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+	$(CL) $(CLFLAGS) -Fe$@ demo_mask.c hw.c plat_win32.c map.c $(MSVC_GUI) $(WINLIBS)
+
+xcb-tile-play$(TAG).exe: demo_play.c play.c bank.c bank_hw.c hw.c plat_win32.c play.h bank.h hw.h
+	$(CL) $(CLFLAGS) -Fe$@ demo_play.c play.c bank.c bank_hw.c hw.c plat_win32.c $(MSVC_GUI) $(WINLIBS)
 
 else
 
@@ -49,6 +57,7 @@ MINGW_CC ?= gcc
 else
 MINGW_CC ?= x86_64-w64-mingw32-gcc
 endif
+MINGW_GUI = -mwindows -lgdi32 -luser32 -lwinmm
 
 all: check-mingw $(DEMOS)
 	@echo "win32 TOOLSET=mingw  ($(MINGW_CC))"
@@ -61,23 +70,31 @@ check-mingw:
 	  echo "Or: make -f Makefile.win32 TOOLSET=msvc"; \
 	  exit 1; }
 
-xcb-tile.exe: demo.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+xcb-tile$(TAG).exe: demo.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
 	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo.c hw.c plat_win32.c map.c \
-		-lgdi32 -luser32 -lwinmm
+		$(MINGW_GUI)
 
-xcb-tile-anim.exe: demo_anim.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+xcb-tile-anim$(TAG).exe: demo_anim.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
 	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo_anim.c hw.c plat_win32.c map.c \
-		-lgdi32 -luser32 -lwinmm
+		$(MINGW_GUI)
 
-xcb-tile-sprites.exe: demo_sprites.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+xcb-tile-sprites$(TAG).exe: demo_sprites.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
 	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo_sprites.c hw.c plat_win32.c map.c \
-		-lgdi32 -luser32 -lwinmm
+		$(MINGW_GUI)
 
-xcb-tile-mask.exe: demo_mask.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
+xcb-tile-mask$(TAG).exe: demo_mask.c hw.c plat_win32.c map.c hw.h hw_internal.h map.h
 	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo_mask.c hw.c plat_win32.c map.c \
-		-lgdi32 -luser32 -lwinmm
+		$(MINGW_GUI)
+
+xcb-tile-play$(TAG).exe: demo_play.c play.c bank.c bank_hw.c hw.c plat_win32.c play.h bank.h hw.h
+	$(MINGW_CC) -std=c11 -Wall -Wextra -O2 -o $@ demo_play.c play.c bank.c bank_hw.c hw.c plat_win32.c \
+		$(MINGW_GUI)
 
 endif
 
 clean:
-	rm -f $(DEMOS) *.obj
+	rm -f $(DEMOS) *.obj \
+		$(addsuffix .exe,$(NAMES)) \
+		$(addsuffix -mingw.exe,$(NAMES)) \
+		$(addsuffix -w64.exe,$(NAMES)) \
+		$(addsuffix -msvc.exe,$(NAMES))
