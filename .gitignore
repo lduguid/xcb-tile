@@ -13,3 +13,8 @@ libtile.a
 !examples/*.bank
 *.exe
 *.obj
+*.lib
+*.exp
+*.pdb
+*.ilk
+nul
